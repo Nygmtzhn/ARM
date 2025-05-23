@@ -1,13 +1,77 @@
 <!doctype html>
 <html lang="en">
+
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React</title>
+    <style>
+      /* Default styles for larger screens */
+      #dify-chatbot-bubble-button {
+        background-color: #1C64F2 !important;
+        position: fixed !important;
+        bottom: 25px !important;
+        right: 25px !important;
+        z-index: 10000 !important;
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 50% !important;
+      }
+
+      #dify-chatbot-bubble-window {
+        width: 24rem !important;  /* Approx 384px */
+        height: 40rem !important; /* Approx 640px */
+        position: fixed !important;
+        bottom: 95px !important; /* bubble height (60px) + bottom offset (25px) + spacing (10px) */
+        right: 25px !important;
+        z-index: 9999 !important;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important; /* Optional: add some shadow */
+        border-radius: 8px !important; /* Optional: rounded corners for the window */
+      }
+
+      /* Styles for mobile devices (e.g., screens less than 640px wide) */
+      @media (max-width: 639px) { /* sm breakpoint in Tailwind is often 640px */
+        #dify-chatbot-bubble-button {
+          width: 50px !important;   /* Slightly smaller button on mobile */
+          height: 50px !important;  /* Slightly smaller button on mobile */
+          bottom: 15px !important;  /* Adjust position for smaller screens */
+          right: 15px !important;   /* Adjust position for smaller screens */
+        }
+
+        #dify-chatbot-bubble-window {
+          width: 90vw !important;    /* Use viewport width, e.g., 90% of screen width */
+          max-width: 320px !important; /* Max width to prevent it being too wide on slightly larger "mobile" */
+          height: 70vh !important;   /* Use viewport height, e.g., 70% of screen height */
+          max-height: 500px !important; /* Max height */
+          bottom: 75px !important; /* Adjust based on new bubble size + offset */
+          right: 15px !important;   /* Align with bubble button */
+          /* Or, to make it more centered or full-width like some mobile chat UIs: */
+          /*
+          width: 100vw !important;
+          height: 80vh !important;
+          max-width: 100% !important;
+          bottom: 0 !important;
+          right: 0 !important;
+          border-radius: 0 !important; 
+          */
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
+  <script>
+    window.difyChatbotConfig = {
+      token: 'mB7l2KVsMJEajKFO',
+      systemVariables: {},
+    }
+  </script>
+  <script
+    src="https://udify.app/embed.min.js"
+    id="mB7l2KVsMJEajKFO"
+    defer>
+  </script>
 </html>

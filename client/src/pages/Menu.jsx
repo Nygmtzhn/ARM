@@ -1,8 +1,11 @@
+// src/pages/Menu.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import '@google/model-viewer';
+import { Link } from 'react-router-dom'; // Import Link for navigation
+import { useCart } from '../pages/CartContext'; // Import useCart
 
-const SERVER_IP = '192.168.0.10';
+const SERVER_IP = '10.131.1.201';
 const BACKEND_PORT = '5000';
 
 const Menu = () => {
@@ -13,11 +16,16 @@ const Menu = () => {
   const [selected, setSelected] = useState(null);
   const [activeCategory, setActiveCategory] = useState(null);
   const categoryRefs = useRef({});
+  const [showDescription, setShowDescription] = useState({});
+
+  const { cart, addToCart } = useCart(); // Use cart context
 
   useEffect(() => {
     axios.get('/api/menus').then(res => {
       setMenus(res.data);
-      setSelectedMenuId(res.data[0]?.id || null);
+      if (res.data.length > 0) {
+        setSelectedMenuId(res.data[0].id);
+      }
     });
   }, []);
 
@@ -25,25 +33,37 @@ const Menu = () => {
     if (selectedMenuId) {
       axios.get(`/api/categories?menu_id=${selectedMenuId}`).then(res => {
         setCategories(res.data);
-        setActiveCategory(res.data[0]?.id || null);
+        if (res.data.length > 0) {
+            setActiveCategory(res.data[0].id);
+        } else {
+            setActiveCategory(null);
+        }
       });
       axios.get('/api/dishes').then(res => {
-        const filtered = res.data.filter(d => d.menu_id === selectedMenuId);
+        const filtered = res.data.filter(d => String(d.menu_id) === String(selectedMenuId));
         setDishes(filtered);
       });
+    } else {
+      setCategories([]);
+      setDishes([]);
+      setActiveCategory(null);
     }
   }, [selectedMenuId]);
 
-  useEffect(() => {
+   useEffect(() => {
     const handleScroll = () => {
-      const offsets = Object.entries(categoryRefs.current).map(([id, el]) => ({
-        id,
-        offset: el?.getBoundingClientRect().top
-      })).filter(item => item.offset !== undefined);
+      const offsets = Object.entries(categoryRefs.current)
+        .map(([id, el]) => ({
+          id: Number(id),
+          offset: el?.getBoundingClientRect().top
+        }))
+        .filter(item => item.offset !== undefined);
 
       const visible = offsets.filter(item => item.offset <= 150);
       if (visible.length > 0) {
-        setActiveCategory(Number(visible[visible.length - 1].id));
+        setActiveCategory(visible[visible.length - 1].id);
+      } else if (offsets.length > 0 && offsets[0].offset > 150 && categories.length > 0) {
+        setActiveCategory(categories[0].id);
       }
     };
 
@@ -51,120 +71,160 @@ const Menu = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [categories]);
 
-  const getDishesByCategory = (catId) => dishes.filter(d => d.category_id === catId);
+  const getDishesByCategory = (catId) => dishes.filter(d => String(d.category_id) === String(catId));
+
+  // handleAddToCart will now use context's addToCart
+  // const handleAddToCart = (dishToAdd) => { ... } // This function is removed, using context's addToCart directly
+
+  const toggleDescription = (dishId) => {
+    setShowDescription(prev => ({ ...prev, [dishId]: !prev[dishId] }));
+  };
+
 
   return (
-    <div className="bg-slate-900 text-[#B3CFE2] min-h-screen max-w-3xl mx-auto px-4 py-6">
-  <h1 className="text-3xl font-bold text-center mb-6">Меню</h1>
+    <div className="bg-slate-900 text-[#B3CFE2] min-h-screen max-w-3xl mx-auto px-4 py-6 relative">
+      <div className="fixed top-4 right-4 z-[60]">
+        <Link to="/cart" className="bg-black text-[#B3CFE2] p-3 rounded-full shadow-lg flex items-center hover:bg-slate-700 transition-colors">
+          <span>🛒</span>
+          {cart.length > 0 && (
+            <span className="bg-yellow-400 text-black text-xs font-bold rounded-full px-2 py-1 ml-2">
+              {cart.reduce((total, item) => total + item.quantity, 0)}
+            </span>
+          )}
+        </Link>
+      </div>
 
-  <div className="flex gap-3 mb-6 justify-center">
-    {menus.map(menu => (
-      <button
-        key={menu.id}
-        onClick={() => setSelectedMenuId(menu.id)}
-        className={`px-4 py-2 rounded-full font-semibold transition ${
-          menu.id === selectedMenuId ? 'bg-black text-[#B3CFE2]' : 'bg-slate-900 hover:text-[#B3CFE2]'
-        }`}
-      >
-        {menu.name}
-      </button>
-    ))}
-  </div>
+      <h1 className="text-3xl font-bold text-center mb-6 pt-12">Меню</h1>
 
-  {categories.length > 0 && (
-  <div className="sticky top-0 z-50 bg-slate-900 flex gap-3 mb-6 overflow-x-auto pb-2 px-4 pt-4">
-    {categories.map(cat => (
-      <button
-        key={cat.id}
-        onClick={() => {
-          const section = document.getElementById(`cat-${cat.id}`);
-          section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }}
-        className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition ${
-          cat.id === activeCategory
-            ? 'bg-black text-[#B3CFE2]'
-            : 'bg-slate-900 hover:text-[#B3CFE2]'
-        }`}
-      >
-        {cat.name}
-      </button>
-    ))}
-  </div>
-)}
-
-
-  {categories.map(category => (
-    <div
-      key={category.id}
-      id={`cat-${category.id}`}
-      ref={el => (categoryRefs.current[category.id] = el)}
-      className="mb-10"
-    >
-      <h2 className="text-xl font-bold mb-4">{category.name}</h2>
-      <div className="space-y-6">
-        {getDishesByCategory(category.id).map(dish => (
-          <div
-            key={dish.id}
-            className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl shadow-md bg-purple-900 hover:shadow-lg transition"
+      <div className="flex gap-3 mb-6 justify-center">
+        {menus.map(menu => (
+          <button
+            key={menu.id}
+            onClick={() => setSelectedMenuId(menu.id)}
+            className={`px-4 py-2 rounded-full font-semibold transition ${
+              menu.id === selectedMenuId ? 'bg-black text-white ring-2 ring-yellow-400' : 'bg-slate-800 hover:bg-slate-700 text-[#B3CFE2]'
+            }`}
           >
-            {dish.image_url && (
-              <img
-                src={`http://${SERVER_IP}:${BACKEND_PORT}${dish.image_url}`}
-                alt={dish.name}
-                className="w-24 h-24 object-cover rounded-lg"
-              />
-            )}
-            <div className="flex-1">
-              <p className="font-semibold text-lg">{dish.name}</p>
-              <p className="text-sm text-gray-500">{dish.price} ₸</p>
-            </div>
-            {selectedMenuId === 1 && (
-              <button
-                onClick={() => setSelected(dish)}
-                className="text-xl bg-yellow-400 hover:bg-yellow-300 text-black w-8 h-8 rounded-full flex items-center justify-center"
-              >
-                +
-              </button>
-            )}
-          </div>
+            {menu.name}
+          </button>
         ))}
       </div>
-    </div>
-  ))}
 
-  {selected && (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-      <div className="relative bg-white rounded-xl p-6 w-full max-w-md">
-        <button
-          onClick={() => setSelected(null)}
-          className="absolute top-2 right-3 text-xl font-bold text-gray-500 hover:text-gray-700"
-        >
-          ✕
-        </button>
-        <h2 className="text-lg font-bold mb-4">{selected.name}</h2>
-        <model-viewer
-          src={`http://${SERVER_IP}:${BACKEND_PORT}${selected.model_url}`}
-          ios-src={
-            selected.model_url_usdz
-              ? `http://${SERVER_IP}:${BACKEND_PORT}${selected.model_url_usdz}`
-              : undefined
-          }
-          ar
-          ar-modes="webxr scene-viewer quick-look"
-          auto-rotate
-          ar-scale="0.001 0.001 0.001"
-          camera-controls
-          style={{ width: '100%', height: '300px', background: '#000' }}
-        >
-          <button slot="ar-button" className="bg-yellow-500 text-black px-4 py-2 rounded mt-2">
-            View in AR
-          </button>
-        </model-viewer>
-      </div>
-    </div>
-  )}
-</div>
+      {categories.length > 0 && (
+        <div className="sticky top-0 z-50 bg-slate-900 flex gap-3 mb-6 overflow-x-auto pb-2 px-1 pt-4 -mx-4 sm:px-4">
+          {categories.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => {
+                const section = document.getElementById(`cat-${cat.id}`);
+                section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                setActiveCategory(cat.id);
+              }}
+              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition ${
+                cat.id === activeCategory
+                  ? 'bg-black text-white ring-2 ring-yellow-400'
+                  : 'bg-slate-800 hover:bg-slate-700 text-[#B3CFE2]'
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      )}
 
+      {categories.map(category => (
+        <div
+          key={category.id}
+          id={`cat-${category.id}`}
+          ref={el => (categoryRefs.current[category.id] = el)}
+          className="mb-10"
+        >
+          <h2 className="text-xl font-bold mb-4 text-yellow-400">{category.name}</h2>
+          <div className="space-y-6">
+            {getDishesByCategory(category.id).map(dish => (
+              <div
+                key={dish.id}
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border border-slate-700 rounded-xl shadow-md bg-purple-900 hover:shadow-lg transition transform hover:scale-[1.01]"
+              >
+                {dish.image_url && (
+                  <img
+                    src={`http://${SERVER_IP}:${BACKEND_PORT}${dish.image_url}`}
+                    alt={dish.name}
+                    className="w-full sm:w-24 h-40 sm:h-24 object-cover rounded-lg mb-2 sm:mb-0"
+                  />
+                )}
+                <div className="flex-1">
+                  <p className="font-semibold text-lg text-white">{dish.name}</p>
+                  <p className="text-sm text-slate-400">{dish.price} ₸</p>
+                  {showDescription[dish.id] && dish.description && (
+                    <p className="text-xs text-slate-300 mt-2 p-2 bg-slate-800 rounded">{dish.description}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-2 sm:mt-0 self-end sm:self-center">
+                  {selectedMenuId === 1 && dish.model_url && (
+                    <button
+                      onClick={() => setSelected(dish)}
+                      className="text-lg bg-yellow-400 hover:bg-yellow-300 text-black w-10 h-10 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+                      title="View in AR"
+                    >
+                      AR
+                    </button>
+                  )}
+                  {dish.description && (
+                    <button
+                      onClick={() => toggleDescription(dish.id)}
+                      className="text-lg bg-slate-700 hover:bg-slate-600 text-white w-10 h-10 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+                      title={showDescription[dish.id] ? "Скрыть описание" : "Показать описание"}
+                    >
+                      {showDescription[dish.id] ? '△' : '▽'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => addToCart(dish)} // Use context's addToCart
+                    className="text-xl bg-green-600 hover:bg-green-500 text-white w-10 h-10 rounded-full flex items-center justify-center transition-transform hover:scale-110"
+                    title="Добавить в корзину"
+                  >
+                    🛒
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {selected && selected.model_url && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-[70]">
+          <div className="relative bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4">
+            <button
+              onClick={() => setSelected(null)}
+              className="absolute top-3 right-3 text-2xl font-bold text-gray-400 hover:text-white"
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-bold mb-4 text-white">{selected.name}</h2>
+            <model-viewer
+              src={`http://${SERVER_IP}:${BACKEND_PORT}${selected.model_url}`}
+              ios-src={
+                selected.model_url_usdz
+                  ? `http://${SERVER_IP}:${BACKEND_PORT}${selected.model_url_usdz}`
+                  : undefined
+              }
+              ar
+              ar-modes="webxr scene-viewer quick-look"
+              auto-rotate
+              camera-controls
+              ar-scale="auto"
+              style={{ width: '100%', height: '350px', background: '#2d3748', borderRadius: '8px' }}
+            >
+              <button slot="ar-button" className="bg-yellow-500 text-black px-6 py-3 rounded-lg mt-4 font-semibold absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                Посмотреть в AR
+              </button>
+            </model-viewer>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
