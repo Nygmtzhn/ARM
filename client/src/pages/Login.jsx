@@ -44,9 +44,7 @@ const Login = () => {
         <button className="w-full bg-blue-600 text-white py-2 rounded">Login</button>
       </form>
       {error && <p className="text-red-500 mt-2">{error}</p>}
-      <p className="mt-4 text-center">
-        Don't have an account? <a href="/register" className="text-blue-600">Register</a>
-      </p>
+      
     </div>
   );
 };
