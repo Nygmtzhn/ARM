@@ -2,9 +2,13 @@
 # Installations
 
 ```bash
-npm install bcrypt jsonwebtoken
-npm install dotenv
-npm install xlsx
+npm install (in root folder)
+
+cd client
+npm install
+
+cd server
+npm install
 ```
 
 # Database Queries
