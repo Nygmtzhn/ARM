@@ -386,16 +386,16 @@ const DishManager = () => {
                 <div className="flex-grow">
                   <p className="font-bold text-lg text-white">{dish.name} — {dish.price}₸</p>
                   <p className="text-xs text-slate-400">Меню: {dish.menu_name || 'N/A'}, Категория: {dish.category_name || 'N/A'}</p>
-                  {dish.description && <p className="text-sm text-slate-300 mt-1 max-w-md truncate" title={dish.description}>{dish.description}</p>}
+                  {dish.description && <p className="text-sm text-slate-300 mt-1 max-w-md" title={dish.description}>{dish.description}</p>}
                   <div className="mt-2 space-x-2">
                     {dish.image_url && <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">Фото</span>}
                     {dish.model_url && <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">GLB</span>}
                     {dish.model_url_usdz && <span className="text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full">USDZ</span>}
                   </div>
                 </div>
-                <div className={`flex flex-col sm:flex-row gap-2 items-center transition-opacity duration-300 ${hoveredDishId === dish.id ? 'opacity-100' : 'opacity-100'}`}>
+                <div className={`flex flex-col items-end sm:flex-row sm:items-center gap-2 flex-shrink-0 transition-opacity duration-300 ${hoveredDishId === dish.id ? 'opacity-100' : 'opacity-100'}`}>
                   <button onClick={() => handleEditDish(dish)} className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-3 py-1.5 rounded-md text-xs w-full sm:w-auto">Изменить</button>
-                  <button onClick={() => handleDeleteDish(dish.id)} className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1.5 rounded-md text-xs w-full sm:w-auto">Удалить</button>
+                  <button onClick={() => handleDeleteDish(dish.id)} className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1.5 rounded-md text-xs whitespace-nowrap sm:w-auto">Удалить</button>
                 </div>
               </div>
             </li>

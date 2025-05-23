@@ -2,10 +2,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import '@google/model-viewer';
-import { Link } from 'react-router-dom'; // Import Link for navigation
-import { useCart } from '../pages/CartContext'; // Import useCart
+import { Link } from 'react-router-dom';
+import { useCart } from '../pages/CartContext';
 
-const SERVER_IP = '10.131.1.201';
+const SERVER_IP = '192.168.0.10'; // Убедитесь, что эти IP и порт доступны с устройства, на котором открывается меню
 const BACKEND_PORT = '5000';
 
 const Menu = () => {
@@ -18,8 +18,9 @@ const Menu = () => {
   const categoryRefs = useRef({});
   const [showDescription, setShowDescription] = useState({});
 
-  const { cart, addToCart } = useCart(); // Use cart context
+  const { cart, addToCart } = useCart();
 
+  // ... (остальные useEffect и функции остаются без изменений) ...
   useEffect(() => {
     axios.get('/api/menus').then(res => {
       setMenus(res.data);
@@ -50,7 +51,7 @@ const Menu = () => {
     }
   }, [selectedMenuId]);
 
-   useEffect(() => {
+  useEffect(() => {
     const handleScroll = () => {
       const offsets = Object.entries(categoryRefs.current)
         .map(([id, el]) => ({
@@ -73,30 +74,33 @@ const Menu = () => {
 
   const getDishesByCategory = (catId) => dishes.filter(d => String(d.category_id) === String(catId));
 
-  // handleAddToCart will now use context's addToCart
-  // const handleAddToCart = (dishToAdd) => { ... } // This function is removed, using context's addToCart directly
-
   const toggleDescription = (dishId) => {
     setShowDescription(prev => ({ ...prev, [dishId]: !prev[dishId] }));
   };
 
-
   return (
-    <div className="bg-slate-900 text-[#B3CFE2] min-h-screen max-w-3xl mx-auto px-4 py-6 relative">
-      <div className="fixed top-4 right-4 z-[60]">
-        <Link to="/cart" className="bg-black text-[#B3CFE2] p-3 rounded-full shadow-lg flex items-center hover:bg-slate-700 transition-colors">
-          <span>🛒</span>
-          {cart.length > 0 && (
+    // Главный контейнер с темным фоном и классом "relative"
+    <div className="bg-slate-900 text-[#B3CFE2] min-h-screen max-w-3xl mx-auto px-4 py-6 relative ">
+      
+      
+      <div className="sticky top-4 z-[60]"> 
+        <div className="flex justify-end"> 
+          <Link to="/cart" className="bg-black text-[#B3CFE2] p-2 rounded-full shadow-lg flex items-center hover:bg-slate-700 transition-colors">
+            <span>🛒</span>
+            {cart.length > 0 && (
             <span className="bg-yellow-400 text-black text-xs font-bold rounded-full px-2 py-1 ml-2">
-              {cart.reduce((total, item) => total + item.quantity, 0)}
+            {cart.reduce((total, item) => total + item.quantity, 0)}
             </span>
-          )}
-        </Link>
-      </div>
+            )}
+          </Link>
+  </div>
+    </div>
+      
 
       <h1 className="text-3xl font-bold text-center mb-6 pt-12">Меню</h1>
 
       <div className="flex gap-3 mb-6 justify-center">
+        {/* ... кнопки выбора меню ... */}
         {menus.map(menu => (
           <button
             key={menu.id}
@@ -112,6 +116,7 @@ const Menu = () => {
 
       {categories.length > 0 && (
         <div className="sticky top-0 z-50 bg-slate-900 flex gap-3 mb-6 overflow-x-auto pb-2 px-1 pt-4 -mx-4 sm:px-4">
+          {/* ... кнопки категорий ... */}
           {categories.map(cat => (
             <button
               key={cat.id}
@@ -144,7 +149,7 @@ const Menu = () => {
             {getDishesByCategory(category.id).map(dish => (
               <div
                 key={dish.id}
-                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border border-slate-700 rounded-xl shadow-md bg-purple-900 hover:shadow-lg transition transform hover:scale-[1.01]"
+                className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 border border-slate-700 rounded-xl shadow-md bg-slate-700 hover:shadow-lg transition transform hover:scale-[1.01]"
               >
                 {dish.image_url && (
                   <img
@@ -157,7 +162,7 @@ const Menu = () => {
                   <p className="font-semibold text-lg text-white">{dish.name}</p>
                   <p className="text-sm text-slate-400">{dish.price} ₸</p>
                   {showDescription[dish.id] && dish.description && (
-                    <p className="text-xs text-slate-300 mt-2 p-2 bg-slate-800 rounded">{dish.description}</p>
+                    <p className="text-xs text-slate-300 mt-2 p-2 bg-slate-800 rounded text-justify">{dish.description}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-2 sm:mt-0 self-end sm:self-center">
@@ -180,7 +185,7 @@ const Menu = () => {
                     </button>
                   )}
                   <button
-                    onClick={() => addToCart(dish)} // Use context's addToCart
+                    onClick={() => addToCart(dish)}
                     className="text-xl bg-green-600 hover:bg-green-500 text-white w-10 h-10 rounded-full flex items-center justify-center transition-transform hover:scale-110"
                     title="Добавить в корзину"
                   >
@@ -194,6 +199,7 @@ const Menu = () => {
       ))}
 
       {selected && selected.model_url && (
+        // ... модальное окно для AR ...
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-[70]">
           <div className="relative bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4">
             <button
