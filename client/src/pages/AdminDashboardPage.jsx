@@ -1,9 +1,8 @@
-// src/pages/AdminDashboardPage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
-// StatCard and DataList components (remain the same)
+
 const StatCard = ({ title, value, subValue, subTitle }) => (
   <div className="bg-slate-750 p-6 rounded-lg shadow-lg">
     <h3 className="text-sm font-medium text-yellow-400 uppercase">{title}</h3>
@@ -41,7 +40,7 @@ const AdminDashboardPage = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportPeriod, setReportPeriod] = useState('day');
   const [reportDate, setReportDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedReportType, setSelectedReportType] = useState('orders'); // New state for report type
+  const [selectedReportType, setSelectedReportType] = useState('orders'); 
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -53,11 +52,11 @@ const AdminDashboardPage = () => {
   }, []);
 
   const fetchAllAnalytics = async (token) => {
-    // ... (this function remains the same)
+    
     setLoading(true);
     setError('');
     try {
-      const headers = { /* Authorization: `Bearer ${token}` */ };
+      const headers = { };
       const [
         summaryRes,
         dishRes,
@@ -86,15 +85,15 @@ const AdminDashboardPage = () => {
       alert('Пожалуйста, выберите тип и период для отчета.');
       return;
     }
-    // const token = localStorage.getItem('token');
+    
     try {
       const response = await axios.get('/api/analytics/sales-report', {
         params: {
-          reportType: selectedReportType, // Pass the selected report type
+          reportType: selectedReportType, 
           period: reportPeriod,
           specificDate: (reportPeriod === 'day' || reportPeriod === 'month' || reportPeriod === 'year' || reportPeriod === 'week') ? reportDate : undefined,
         },
-        // headers: { Authorization: `Bearer ${token}` },
+        
         responseType: 'blob',
       });
 
@@ -123,7 +122,7 @@ const AdminDashboardPage = () => {
       setShowReportModal(false);
 
     } catch (error) {
-        // ... (error handling remains the same)
+        
       console.error('Error downloading report:', error.response || error);
       const errorData = error.response?.data;
       if(errorData instanceof Blob && errorData.type === "application/json") {

@@ -1,4 +1,3 @@
-// src/pages/AdminOrdersPage.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -11,11 +10,11 @@ const AdminOrdersPage = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-        // Consider using navigate from react-router-dom for SPA navigation
-        // import { useNavigate } from 'react-router-dom';
-        // const navigate = useNavigate();
-        // navigate('/login');
-        window.location.href = '/login'; // Current implementation
+        
+        
+        
+        
+        window.location.href = '/login'; 
         return;
     }
     fetchOrders(token);
@@ -25,7 +24,7 @@ const AdminOrdersPage = () => {
     setLoading(true);
     try {
       const response = await axios.get('/api/orders', {
-        // headers: { Authorization: `Bearer ${token}` } // Uncomment if admin auth is set up
+        
       });
       setOrders(response.data);
       setError('');
@@ -39,15 +38,15 @@ const AdminOrdersPage = () => {
 
   const handleStatusChange = async (orderId, newStatus) => {
     const token = localStorage.getItem('token');
-    // Optional: Add confirmation before changing status
+    
     if (!window.confirm(`Вы уверены, что хотите изменить статус заказа #${orderId} на "${newStatus}"?`)) {
         return;
     }
     try {
       const response = await axios.put(`/api/orders/${orderId}/status`, { status: newStatus }, {
-        // headers: { Authorization: `Bearer ${token}` } // Uncomment if admin auth is set up
+        
       });
-      // Update the order status in the local state to reflect the change immediately
+      
       setOrders(prevOrders =>
         prevOrders.map(order =>
           order.id === orderId ? { ...order, order_status: response.data.order_status } : order

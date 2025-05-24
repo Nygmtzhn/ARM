@@ -1,7 +1,6 @@
-// server/controllers/orderController.js
 import pool from '../db.js';
 
-// Create a new order
+
 export const createOrder = async (req, res) => {
   const { cart, orderDetails, total } = req.body;
 
@@ -21,7 +20,7 @@ export const createOrder = async (req, res) => {
   }
 };
 
-// Get all orders (for admin)
+
 export const getAllOrders = async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
@@ -32,7 +31,7 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
-// (Optional) Get a single order by ID
+
 export const getOrderById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -47,7 +46,7 @@ export const getOrderById = async (req, res) => {
   }
 };
 
-// (Optional) Update order status (for admin)
+
 export const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -64,7 +63,7 @@ export const updateOrderStatus = async (req, res) => {
     }
     res.json(result.rows[0]);
   } catch (err) {
-    console.error('Error updating order status:', err.message); // Log specific error
+    console.error('Error updating order status:', err.message); 
     res.status(500).json({ error: 'Failed to update order status' });
   }
 };
