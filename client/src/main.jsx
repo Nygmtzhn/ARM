@@ -6,7 +6,7 @@ import { CartProvider } from './pages/CartContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <CartProvider> {/* Wrap App with CartProvider */}
+    <CartProvider> {}
       <App />
     </CartProvider>
   </StrictMode>,

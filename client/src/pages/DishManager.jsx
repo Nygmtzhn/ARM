@@ -1,12 +1,11 @@
-// src/pages/DishManager.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 const DishManager = () => {
-  // --- States for Dish Management ---
+  
   const [menus, setMenus] = useState([]);
-  const [dishCategories, setDishCategories] = useState([]); // Categories for dish form dropdown
+  const [dishCategories, setDishCategories] = useState([]); 
   const [dishes, setDishes] = useState([]);
   const [filteredDishes, setFilteredDishes] = useState([]);
   const [dishForm, setDishForm] = useState({
@@ -22,19 +21,19 @@ const DishManager = () => {
   const [editingDishId, setEditingDishId] = useState(null);
   const [hoveredDishId, setHoveredDishId] = useState(null);
 
-  // --- States for Category Management ---
+  
   const [categoryForm, setCategoryForm] = useState({
-    id: null, // For editing
+    id: null, 
     name: '',
     slug: '',
     position: 0,
-    menu_id: '', // Menu to which this category belongs
+    menu_id: '', 
   });
   const [editingCategoryId, setEditingCategoryId] = useState(null);
-  const [allCategoriesForDisplay, setAllCategoriesForDisplay] = useState([]); // To list categories for management
-  const [categoryManagementMenuFilter, setCategoryManagementMenuFilter] = useState(''); // To filter categories list by menu
+  const [allCategoriesForDisplay, setAllCategoriesForDisplay] = useState([]); 
+  const [categoryManagementMenuFilter, setCategoryManagementMenuFilter] = useState(''); 
 
-  // --- Effects ---
+  
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -55,7 +54,7 @@ const DishManager = () => {
   }, [dishes, dishForm.menu_id, dishForm.category_id]);
 
 
-  // --- Dish Management Functions ---
+  
   const fetchMenus = async () => {
     try {
       const res = await axios.get('/api/menus');
@@ -152,7 +151,7 @@ const DishManager = () => {
         image: null, model: null, usdz: null,
       });
       setEditingDishId(dish.id);
-        // Scroll to dish form
+        
       document.getElementById('dish-form-section')?.scrollIntoView({ behavior: 'smooth' });
     });
   };
@@ -169,7 +168,7 @@ const DishManager = () => {
     }
   };
 
-  // --- Category Management Functions ---
+  
   const fetchAllCategories = async () => {
     try {
         const res = await axios.get('/api/categories');
@@ -266,7 +265,7 @@ const DishManager = () => {
     : allCategoriesForDisplay;
 
 
-  // --- Render ---
+  
   return (
     <div className="p-6 max-w-4xl mx-auto bg-slate-800 text-gray-100 rounded-lg shadow-xl my-8 space-y-12">
       {/* Navigation Header */}

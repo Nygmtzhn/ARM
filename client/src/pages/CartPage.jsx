@@ -1,10 +1,9 @@
-// src/pages/CartPage.jsx
 import React, { useState } from 'react';
 import { useCart } from '../pages/CartContext';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const SERVER_IP = '172.20.10.3'; // Ensure this matches your Menu.jsx if needed for images
+const SERVER_IP = '172.20.10.3';
 const BACKEND_PORT = '5000';
 
 const CartPage = () => {
@@ -35,7 +34,7 @@ const CartPage = () => {
     setOrderDetails(prev => ({ ...prev, [name]: value }));
   };
 
-  const handlePayment = async (e) => { // Make it async
+  const handlePayment = async (e) => { 
     e.preventDefault();
     if (!orderDetails.firstName || !orderDetails.lastName || !orderDetails.phone || !orderDetails.address) {
       alert('Пожалуйста, заполните все поля для заказа.');
@@ -43,19 +42,18 @@ const CartPage = () => {
     }
 
     const orderData = {
-      cart: cart.map(item => ({ // Send a simplified version of cart items
+      cart: cart.map(item => ({
         id: item.id,
         name: item.name,
         quantity: item.quantity,
         price: item.price,
-        image_url: item.image_url // Optional, if you want to store it with the order
+        image_url: item.image_url
       })),
       orderDetails,
       total: getCartTotal(),
     };
 
-    try {
-      // Replace with your actual API endpoint for orders
+    try {    
       const response = await axios.post('/api/orders', orderData);
       console.log('Order submitted successfully:', response.data);
       alert('Заказ успешно оформлен! Спасибо!');

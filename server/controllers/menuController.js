@@ -1,4 +1,3 @@
-// server/controllers/menuController.js
 import pool from '../db.js';
 
 export const getAllMenus = async (req, res) => {

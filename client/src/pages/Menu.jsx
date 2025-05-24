@@ -1,11 +1,10 @@
-// src/pages/Menu.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import '@google/model-viewer';
 import { Link } from 'react-router-dom';
 import { useCart } from '../pages/CartContext';
 
-const SERVER_IP = '192.168.0.10'; // Убедитесь, что эти IP и порт доступны с устройства, на котором открывается меню
+const SERVER_IP = '192.168.0.10'; 
 const BACKEND_PORT = '5000';
 
 const Menu = () => {
@@ -20,7 +19,6 @@ const Menu = () => {
 
   const { cart, addToCart } = useCart();
 
-  // ... (остальные useEffect и функции остаются без изменений) ...
   useEffect(() => {
     axios.get('/api/menus').then(res => {
       setMenus(res.data);
@@ -79,7 +77,6 @@ const Menu = () => {
   };
 
   return (
-    // Главный контейнер с темным фоном и классом "relative"
     <div className="bg-slate-900 text-[#B3CFE2] min-h-screen max-w-3xl mx-auto px-4 py-6 relative ">
       
       
@@ -100,7 +97,7 @@ const Menu = () => {
       <h1 className="text-3xl font-bold text-center mb-6 pt-12">Меню</h1>
 
       <div className="flex gap-3 mb-6 justify-center">
-        {/* ... кнопки выбора меню ... */}
+        {}
         {menus.map(menu => (
           <button
             key={menu.id}
@@ -116,7 +113,7 @@ const Menu = () => {
 
       {categories.length > 0 && (
         <div className="sticky top-0 z-50 bg-slate-900 flex gap-3 mb-6 overflow-x-auto pb-2 px-1 pt-4 -mx-4 sm:px-4">
-          {/* ... кнопки категорий ... */}
+          {}
           {categories.map(cat => (
             <button
               key={cat.id}
@@ -198,8 +195,7 @@ const Menu = () => {
         </div>
       ))}
 
-      {selected && selected.model_url && (
-        // ... модальное окно для AR ...
+      {selected && selected.model_url && (        
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-[70]">
           <div className="relative bg-slate-800 rounded-xl p-6 w-full max-w-md mx-4">
             <button

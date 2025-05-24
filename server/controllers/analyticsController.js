@@ -1,15 +1,12 @@
-// server/controllers/analyticsController.js
 import pool from '../db.js';
-import xlsx from 'xlsx'; // Ensure you have run: npm install xlsx
-
-// --- Helper functions for Report Generation with Date Filters ---
+import xlsx from 'xlsx'; 
 
 const fetchOrderReportData = async (startDate, endDate) => {
   const result = await pool.query(
     "SELECT id, customer_details, order_items, total_amount, order_status, created_at FROM orders WHERE order_status = 'completed' AND created_at >= $1 AND created_at < $2 ORDER BY created_at DESC",
     [startDate, endDate]
   );
-  // Format data for Excel
+  
   return result.rows.map(order => {
     const items = order.order_items.map(item => `${item.name} (x${item.quantity || 1}) - ${(item.price || 0) * (item.quantity || 1)}₸`).join('\n');
     return {
@@ -42,7 +39,7 @@ const fetchDishSalesReportData = async (startDate, endDate) => {
   const result = await pool.query(query, [startDate, endDate]);
   return result.rows.map(row => ({
     ...row,
-    "Выручка (₸)": parseFloat(row["Выручка (₸)"]).toFixed(2) // Ensure correct parsing for display
+    "Выручка (₸)": parseFloat(row["Выручка (₸)"]).toFixed(2) 
   }));
 };
 
@@ -94,7 +91,7 @@ const fetchMenuSalesReportData = async (startDate, endDate) => {
   }));
 };
 
-// --- Main function for downloading sales report ---
+
 export const downloadSalesReport = async (req, res) => {
   const { period, specificDate, reportType = 'orders' } = req.query;
 
@@ -102,12 +99,12 @@ export const downloadSalesReport = async (req, res) => {
   const today = new Date();
   let reportDateRef = specificDate ? new Date(specificDate) : today;
 
-  // Validate specificDate
+  
   if (isNaN(reportDateRef.getTime())) {
-    reportDateRef = today; // Default to today if specificDate is invalid
+    reportDateRef = today; 
   }
   
-  // Normalize reportDateRef to the start of its day to avoid time zone issues with date boundaries
+  
   reportDateRef.setHours(0, 0, 0, 0);
 
 
@@ -118,12 +115,12 @@ export const downloadSalesReport = async (req, res) => {
       endDate.setDate(reportDateRef.getDate() + 1);
       break;
     case 'week':
-      // For 'week', reportDateRef is the END of the week (e.g., Sunday or selected day)
-      // The week will be 7 days ending on reportDateRef
+      
+      
       endDate = new Date(reportDateRef);
-      endDate.setDate(reportDateRef.getDate() + 1); // End of the specified day
+      endDate.setDate(reportDateRef.getDate() + 1); 
       startDate = new Date(reportDateRef);
-      startDate.setDate(reportDateRef.getDate() - 6); // Start 7 days ago (inclusive of reportDateRef)
+      startDate.setDate(reportDateRef.getDate() - 6); 
       break;
     case 'month':
       startDate = new Date(reportDateRef.getFullYear(), reportDateRef.getMonth(), 1);
@@ -139,7 +136,7 @@ export const downloadSalesReport = async (req, res) => {
 
   try {
     let reportData;
-    let sheetName = 'Отчет'; // Default sheet name
+    let sheetName = 'Отчет'; 
 
     switch (reportType) {
       case 'orders':
@@ -186,7 +183,7 @@ export const downloadSalesReport = async (req, res) => {
 };
 
 
-// --- Dashboard Summary Functions (can remain or be refactored if dashboard needs date ranges) ---
+
 export const getTotalSalesSummary = async (req, res) => {
   try {
     const totalSalesResult = await pool.query(

@@ -1,4 +1,3 @@
-// server/index.js
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -7,7 +6,7 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import menuRoutes from './routes/menuRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
-import analyticsRoutes from './routes/analyticsRoutes.js'; // Import analytics routes
+import analyticsRoutes from './routes/analyticsRoutes.js'; 
 
 dotenv.config();
 
@@ -23,7 +22,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/menus', menuRoutes);
 app.use('/api/dishes', dishRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/analytics', analyticsRoutes); // Add analytics routes
+app.use('/api/analytics', analyticsRoutes); 
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
