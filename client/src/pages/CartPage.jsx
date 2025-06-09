@@ -2,9 +2,27 @@ import React, { useState } from 'react';
 import { useCart } from '../pages/CartContext';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import QRCode from "react-qr-code";
 
 const SERVER_IP = '172.20.10.3';
 const BACKEND_PORT = '5000';
+
+const transliterate = (text) => {
+    const cyrillicMap = {
+        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh',
+        'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o',
+        'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts',
+        'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ъ': '', 'ы': 'y', 'ь': "'", 'э': 'e', 'ю': 'yu',
+        'я': 'ya',
+        'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'Yo', 'Ж': 'Zh',
+        'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N', 'О': 'O',
+        'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts',
+        'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch', 'Ъ': '', 'Ы': 'Y', 'Ь': "'", 'Э': 'E', 'Ю': 'Yu',
+        'Я': 'Ya'
+    };
+
+    return text.split('').map(char => cyrillicMap[char] || char).join('');
+};
 
 const CartPage = () => {
   const { cart, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
@@ -16,6 +34,8 @@ const CartPage = () => {
     phone: '',
     address: '',
   });
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [qrCodeValue, setQrCodeValue] = useState('');
 
   const handleQuantityChange = (dishId, newQuantity) => {
     updateQuantity(dishId, parseInt(newQuantity, 10));
@@ -32,6 +52,25 @@ const CartPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setOrderDetails(prev => ({ ...prev, [name]: value }));
+  };
+
+  const generateOrderForWaiter = () => {
+    if (cart.length === 0) {
+      alert('Ваша корзина пуста!');
+      return;
+    }
+
+    let orderText = `New Order:\n`;
+    orderText += `Date: ${new Date().toLocaleString()}\n\n`;
+    orderText += "Items:\n";
+    cart.forEach(item => {
+      const itemName = transliterate(item.name);
+      orderText += `- ${itemName} (x${item.quantity}) - ${item.price * item.quantity} KZT\n`;
+    });
+    orderText += `\nTotal: ${getCartTotal()} KZT`;
+
+    setQrCodeValue(orderText);
+    setShowQRCode(true);
   };
 
   const handlePayment = async (e) => { 
@@ -65,6 +104,37 @@ const CartPage = () => {
       alert(`Ошибка при оформлении заказа: ${error.response ? error.response.data.error : error.message}`);
     }
   };
+  
+  if (showQRCode) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[100]">
+        <div className="bg-slate-800 p-8 rounded-lg shadow-xl text-center">
+            <h2 className="text-2xl font-bold text-yellow-400 mb-4">Заказ для Официанта</h2>
+            <p className="text-slate-300 mb-6">Покажите этот QR-код вашему официанту.</p>
+            <div className="p-4 bg-white rounded-lg flex justify-center">
+                <QRCode value={qrCodeValue} size={256} />
+            </div>
+            <button
+                onClick={() => {
+                    setShowQRCode(false);
+                    clearCart();
+                    navigate('/menu');
+                }}
+                className="w-full mt-6 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-3 px-6 rounded-lg transition-colors text-lg"
+            >
+                Готово (Очистить корзину)
+            </button>
+             <button
+              type="button"
+              onClick={() => setShowQRCode(false)}
+              className="w-full mt-4 bg-slate-600 hover:bg-slate-500 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+            >
+              Назад к корзине
+            </button>
+        </div>
+      </div>
+    );
+  }
 
   if (cart.length === 0 && !showOrderForm) {
     return (
@@ -83,14 +153,14 @@ const CartPage = () => {
   return (
     <div className="max-w-3xl mx-auto mt-10 p-6 bg-slate-800 text-white rounded-lg shadow-xl">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-yellow-400">Ваша корзина</h1>
+        <h1 className="text-3xl font-bold text-yellow-400">Ваша Корзина</h1>
         <Link to="/menu" className="text-sm text-yellow-500 hover:text-yellow-300">&larr; Вернуться в меню</Link>
       </div>
 
       {!showOrderForm ? (
         <>
           {cart.map(item => (
-            <div key={item.id} className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 mb-4 border border-slate-700 rounded-lg bg-purple-900">
+            <div key={item.id} className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 mb-4 border border-slate-700 rounded-lg bg-slate-750">
               {item.image_url && (
                 <img
                   src={`http://${SERVER_IP}:${BACKEND_PORT}${item.image_url}`}
@@ -138,17 +208,25 @@ const CartPage = () => {
               <span>Итого:</span>
               <span>{getCartTotal()} ₸</span>
             </div>
-            <button
-              onClick={handleConfirmOrder}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-lg"
-            >
-              Подтверждаю заказ
-            </button>
+            <div className="flex flex-col md:flex-row gap-4">
+                <button
+                onClick={handleConfirmOrder}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-lg"
+                >
+                Заказать доставку
+                </button>
+                <button
+                onClick={generateOrderForWaiter}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-lg"
+                >
+                Сформировать заказ для официанта
+                </button>
+            </div>
           </div>
         </>
       ) : (
         <form onSubmit={handlePayment} className="space-y-6">
-          <h2 className="text-2xl font-semibold text-center text-yellow-400 mb-6">Детали заказа</h2>
+           <h2 className="text-2xl font-semibold text-center text-yellow-400 mb-6">Детали заказа для доставки</h2>
           <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-slate-300 mb-1">Имя</label>
             <input
@@ -206,7 +284,7 @@ const CartPage = () => {
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors text-lg"
             >
-              Оплатить
+              Оплатить и заказать доставку
             </button>
           </div>
            <button

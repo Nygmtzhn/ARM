@@ -4,7 +4,7 @@ import '@google/model-viewer';
 import { Link } from 'react-router-dom';
 import { useCart } from '../pages/CartContext';
 
-const SERVER_IP = '192.168.0.10'; 
+const SERVER_IP = '192.168.0.13'; 
 const BACKEND_PORT = '5000';
 
 const Menu = () => {
