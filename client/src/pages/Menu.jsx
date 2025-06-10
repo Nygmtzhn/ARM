@@ -4,7 +4,7 @@ import '@google/model-viewer';
 import { Link } from 'react-router-dom';
 import { useCart } from '../pages/CartContext';
 
-const SERVER_IP = '192.168.0.13'; 
+const SERVER_IP = '192.168.1.75'; 
 const BACKEND_PORT = '5000';
 
 const Menu = () => {
@@ -80,7 +80,7 @@ const Menu = () => {
     <div className="bg-slate-900 text-[#B3CFE2] min-h-screen max-w-3xl mx-auto px-4 py-6 relative ">
       
       
-      <div className="sticky top-4 z-[60]"> 
+      <div className="sticky top-4 z-[60] pointer-events-none"> 
         <div className="flex justify-end"> 
           <Link to="/cart" className="bg-black text-[#B3CFE2] p-2 rounded-full shadow-lg flex items-center hover:bg-slate-700 transition-colors">
             <span>🛒</span>
