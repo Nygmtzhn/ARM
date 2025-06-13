@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import QRCode from "react-qr-code";
 
-const SERVER_IP = '192.168.133.48';
+const SERVER_IP = '192.168.113.48';
 const BACKEND_PORT = '5000';
 
 const transliterate = (text) => {

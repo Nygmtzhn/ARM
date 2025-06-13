@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import '@google/model-viewer';
 import { Link } from 'react-router-dom';
@@ -17,13 +17,6 @@ const Menu = () => {
     const categoryRefs = useRef({});
     const [showDescription, setShowDescription] = useState({});
 
-    const stickyNavRef = useRef(null);
-    const scrollContainerRef = useRef(null);
-    const [navHeight, setNavHeight] = useState(0);
-
-    const isClickScrolling = useRef(false);
-    const scrollTimeout = useRef(null);
-
     const { cart, addToCart } = useCart();
 
     useEffect(() => {
@@ -35,80 +28,53 @@ const Menu = () => {
 
     useEffect(() => {
         if (selectedMenuId) {
-            axios.get(`/api/categories?menu_id=${selectedMenuId}`).then(res => setCategories(res.data));
+            axios.get(`/api/categories?menu_id=${selectedMenuId}`).then(res => {
+                setCategories(res.data)
+                if (res.data.length > 0) {
+                    setActiveCategory(res.data[0].id);
+                }
+            });
             axios.get('/api/dishes').then(res => {
                 const filtered = res.data.filter(d => String(d.menu_id) === String(selectedMenuId));
                 setDishes(filtered);
             });
         }
     }, [selectedMenuId]);
-
-    useLayoutEffect(() => {
-        if (stickyNavRef.current) {
-            setNavHeight(stickyNavRef.current.offsetHeight);
-        }
-    }, [categories]);
-
+    
     useEffect(() => {
-        const scrollContainer = scrollContainerRef.current;
-        if (!scrollContainer) return;
-
         const handleScroll = () => {
-            if (isClickScrolling.current) {
-                return;
-            }
-            const containerTop = scrollContainer.getBoundingClientRect().top;
-            const scrollThreshold = navHeight + 20;
-            const offsets = Object.values(categoryRefs.current)
-                .filter(el => el)
-                .map(el => {
-                    const elementTop = el.getBoundingClientRect().top;
-                    const relativeTop = elementTop - containerTop;
-                    return {
-                        id: Number(el.id.replace('cat-', '')),
-                        offset: relativeTop
-                    };
-                });
-            const visible = offsets.filter(item => item.offset <= scrollThreshold);
-            let newActiveCategory = null;
+            const scrollThreshold = 150; 
+            
+            const offsets = Object.entries(categoryRefs.current)
+              .map(([id, el]) => ({
+                id: Number(id),
+                top: el?.getBoundingClientRect().top 
+              }))
+              .filter(item => item.top !== undefined);
+            
+            const visible = offsets.filter(item => item.top <= scrollThreshold);
+
             if (visible.length > 0) {
-                newActiveCategory = visible[visible.length - 1].id;
+                setActiveCategory(visible[visible.length - 1].id);
             } else if (categories.length > 0) {
-                newActiveCategory = categories[0].id;
-            }
-            if (newActiveCategory) {
-                setActiveCategory(newActiveCategory);
+                setActiveCategory(categories[0].id);
             }
         };
 
-        scrollContainer.addEventListener('scroll', handleScroll);
-        if (categories.length > 0) {
-            setActiveCategory(categories[0].id);
-        }
-        return () => scrollContainer.removeEventListener('scroll', handleScroll);
-    }, [navHeight, categories]);
-
-
-    const handleCategoryClick = (catId) => {
-        isClickScrolling.current = true;
-        setActiveCategory(catId);
-        document.getElementById(`cat-${catId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        clearTimeout(scrollTimeout.current);
-        scrollTimeout.current = setTimeout(() => {
-            isClickScrolling.current = false;
-        }, 1000);
-    };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [categories]);
 
     const getDishesByCategory = (catId) => dishes.filter(d => String(d.category_id) === String(catId));
+    
     const toggleDescription = (dishId) => {
         setShowDescription(prev => ({ ...prev, [dishId]: !prev[dishId] }));
     };
 
     return (
-        <div ref={scrollContainerRef} className="bg-slate-900 text-[#B3CFE2] h-screen overflow-y-auto max-w-3xl mx-auto px-4 py-6 relative">
-            {/* CHANGE START: I've updated the bottom positioning of the cart icon container */}
-            <div className="fixed bottom-24 right-4 z-[60]">
-            {/* CHANGE END */}
+        <div className="bg-slate-900 text-[#B3CFE2] min-h-screen max-w-3xl mx-auto px-4 py-6 relative">
+            
+            <div className="fixed bottom-[80px] right-5 md:top-5 md:right-8 md:bottom-auto z-[60]">
                 <Link to="/cart" className="bg-black text-[#B3CFE2] p-4 rounded-full shadow-lg flex items-center hover:bg-slate-700 transition-colors pointer-events-auto">
                     <span>🛒</span>
                     {cart.length > 0 && (
@@ -130,9 +96,11 @@ const Menu = () => {
             </div>
 
             {categories.length > 0 && (
-                <div ref={stickyNavRef} className="sticky top-0 z-50 bg-slate-900 flex gap-3 mb-6 overflow-x-auto pb-2 px-1 pt-4 -mx-4 sm:px-4">
+                <div className="sticky top-0 z-50 bg-slate-900 flex justify-center gap-3 mb-6 overflow-x-auto pb-2 px-1 pt-4 -mx-4 sm:px-4">
                     {categories.map(cat => (
-                        <button key={cat.id} onClick={() => handleCategoryClick(cat.id)} className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition ${cat.id === activeCategory ? 'bg-black text-white ring-2 ring-yellow-400' : 'bg-slate-800 hover:bg-slate-700 text-[#B3CFE2]'}`}>
+                        <button key={cat.id} onClick={() => {
+                            document.getElementById(`cat-${cat.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }} className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition ${cat.id === activeCategory ? 'bg-black text-white ring-2 ring-yellow-400' : 'bg-slate-800 hover:bg-slate-700 text-[#B3CFE2]'}`}>
                             {cat.name}
                         </button>
                     ))}
@@ -140,11 +108,17 @@ const Menu = () => {
             )}
 
             {categories.map(category => (
-                <div key={category.id} id={`cat-${category.id}`} ref={el => (categoryRefs.current[category.id] = el)} className="mb-10">
-                    <h2 className="text-xl font-bold mb-4 text-yellow-400 pt-4 -mt-4">{category.name}</h2>
+                <div
+                  key={category.id}
+                  id={`cat-${category.id}`}
+                  ref={el => (categoryRefs.current[category.id] = el)}
+                  className="mb-10"
+                >
+                    <h2 className="text-xl font-bold mb-4 text-yellow-400">{category.name}</h2>
+                    
                     <div className="space-y-6">
                         {getDishesByCategory(category.id).map(dish => (
-                            <div key={dish.id}>
+                           <div key={dish.id}>
                                 <div
                                     className="flex items-center gap-4 p-4 border-slate-700 rounded-xl shadow-md bg-slate-700 hover:shadow-lg transition transform hover:scale-[1.01] cursor-pointer"
                                     onClick={() => dish.description && toggleDescription(dish.id)}
@@ -153,7 +127,7 @@ const Menu = () => {
                                         <img
                                             src={`http://${SERVER_IP}:${BACKEND_PORT}${dish.image_url}`}
                                             alt={dish.name}
-                                            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                                            className="w-20 h-20 object-cover rounded flex-shrink-0"
                                         />
                                     )}
                                     <div className="flex-1">
